@@ -31,4 +31,25 @@ describe Oystercard do
       expect { subject.deduct(10) }.to change { subject.balance }.by(-10)
     end
   end
+
+  describe '#in_journey' do
+    it 'should show oyster card as not in journey when initialized' do
+      card = Oystercard.new
+      expect(subject).not_to be_in_journey
+    end
+  end
+
+  it 'can touch in' do
+    card = Oystercard.new
+    subject.top_up(10)
+    subject.touch_in
+    expect(subject).to be_in_journey
+  end
+
+  it 'can touch out' do
+    card = Oystercard.new
+    subject.top_up(20)
+    subject.touch_out
+    expect(subject).not_to be_in_journey
+  end
 end
