@@ -30,6 +30,12 @@ describe Oystercard do
       card.top_up(50)
       expect { subject.deduct(10) }.to change { subject.balance }.by(-10)
     end
+    it 'shoud deduct the minumum charge when you touch out' do
+      card = Oystercard.new
+      card.top_up(5)
+      card.touch_in
+      expect { subject.touch_out }.to change { subject.balance }.by(-Oystercard::MINUMUM_CHARGE)
+    end
   end
 
   describe '#in_journey' do
