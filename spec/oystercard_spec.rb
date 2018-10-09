@@ -4,7 +4,7 @@ require 'pry'
 describe Oystercard do
   let(:station) { double(:station, name: :london_bridge) }
   let(:station_2) { double(:station, name: :aldgate) }
-  let(:journey) { { entry_station: station.name, exit_station: station_2.name } }
+  let(:journey) { double(:journey, data: { entry_station: station.name, exit_station: station_2.name } ) }
 
   describe '#balance' do
     it 'should have a balance of 0' do
@@ -36,8 +36,11 @@ describe Oystercard do
     end
 
     it 'shoud deduct the minumum charge when you touch out' do
-      subject.touch_in(station)
-      expect { subject.touch_out(station) }.to change { subject.balance }.by(-Oystercard::MINUMUM_CHARGE)
+      allow(journey).to receive(:start).with(station)
+      allow(journey).to receive(:finish).with(station)
+      allow(journey).to receive(:fare).and_return(1)
+      subject.touch_in(station, journey)
+      expect { subject.touch_out(station, journey) }.to change { subject.balance }.by(-1)
     end
   end
 
@@ -49,44 +52,54 @@ describe Oystercard do
 
 
   it 'can touch in' do
+    allow(journey).to receive(:start).with(station)
     subject.top_up(10)
-    subject.touch_in(station)
+    subject.touch_in(station, journey)
     expect(subject).to be_in_journey
   end
 
   it 'can touch out' do
+    allow(journey).to receive(:finish).with(station)
+    allow(journey).to receive(:fare).and_return(1)
     subject.top_up(20)
-    subject.touch_out(station)
+    subject.touch_out(station, journey)
     expect(subject).not_to be_in_journey
   end
 
   describe '#touch_in' do
     it 'raises an error if balance is less than 1' do
-      expect { subject.touch_in(station) }.to raise_error 'Insufficent funds'
+      expect { subject.touch_in(station, journey) }.to raise_error 'Insufficent funds'
     end
 
     it'should remember the station after it touches in' do
+      allow(journey).to receive(:start).with(station)
       subject.top_up(5)
-      subject.touch_in(station)
+      subject.touch_in(station, journey)
       expect(subject.entry_station).to eq station.name
     end
   end
 
   describe '#touch_out' do
     it 'should forget the entry station when it touches out' do
+      allow(journey).to receive(:start).with(station)
+      allow(journey).to receive(:finish).with(station)
+      allow(journey).to receive(:fare).and_return(1)
       subject.top_up(5)
-      subject.touch_in(station)
-      subject.touch_out(station)
+      subject.touch_in(station, journey)
+      subject.touch_out(station, journey)
       expect(subject.entry_station).to eq nil
     end
   end
 
   describe "#journeys" do
     it 'should save journey data' do
+      allow(journey).to receive(:start).with(station)
+      allow(journey).to receive(:finish).with(station_2)
+      allow(journey).to receive(:fare).and_return(1)
       subject.top_up(5)
-      subject.touch_in(station)
-      subject.touch_out(station_2)
-      expect(subject.journeys).to include journey
+      subject.touch_in(station, journey)
+      subject.touch_out(station_2, journey)
+      expect(subject.journeys).to include journey.data
     end
   end
 
