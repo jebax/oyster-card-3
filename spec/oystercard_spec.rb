@@ -39,6 +39,7 @@ describe Oystercard do
     end
   end
 
+
   it 'can touch in' do
     card = Oystercard.new
     subject.top_up(10)
@@ -52,4 +53,12 @@ describe Oystercard do
     subject.touch_out
     expect(subject).not_to be_in_journey
   end
+
+  describe '#touch_in' do
+    it 'raises an error if balance is less than 1' do
+      card = Oystercard.new
+      expect { subject.touch_in}.to raise_error 'Insufficent funds'
+    end
+  end
+
 end
