@@ -2,7 +2,9 @@ require 'oystercard'
 require 'pry'
 
 describe Oystercard do
-  let(:station) { double(:station, name: :london_bridge)}
+  let(:station) { double(:station, name: :london_bridge) }
+  let(:station_2) { double(:station, name: :aldgate) }
+  let(:journey) { { entry_station: station.name, exit_station: station_2.name } }
 
   describe '#balance' do
     it 'should have a balance of 0' do
@@ -32,10 +34,10 @@ describe Oystercard do
     it 'should deduct money from card' do
       expect { subject.deduct(10) }.to change { subject.balance }.by(-10)
     end
-    
+
     it 'shoud deduct the minumum charge when you touch out' do
       subject.touch_in(station)
-      expect { subject.touch_out }.to change { subject.balance }.by(-Oystercard::MINUMUM_CHARGE)
+      expect { subject.touch_out(station) }.to change { subject.balance }.by(-Oystercard::MINUMUM_CHARGE)
     end
   end
 
@@ -54,7 +56,7 @@ describe Oystercard do
 
   it 'can touch out' do
     subject.top_up(20)
-    subject.touch_out
+    subject.touch_out(station)
     expect(subject).not_to be_in_journey
   end
 
@@ -74,8 +76,17 @@ describe Oystercard do
     it 'should forget the entry station when it touches out' do
       subject.top_up(5)
       subject.touch_in(station)
-      subject.touch_out
+      subject.touch_out(station)
       expect(subject.entry_station).to eq nil
+    end
+  end
+
+  describe "#journeys" do
+    it 'should save journey data' do
+      subject.top_up(5)
+      subject.touch_in(station)
+      subject.touch_out(station_2)
+      expect(subject.journeys).to include journey
     end
   end
 
