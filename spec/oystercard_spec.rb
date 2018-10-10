@@ -57,6 +57,12 @@ describe Oystercard do
       subject.touch_out(station_2)
       expect(subject.journeys).to include journey_1
     end
+
+    it 'deducts penalty fare if touch in without touching out' do
+      2.times { subject.touch_in(station) }
+      expect(subject.balance).to eq 4
+    end
+
   end
 
   it 'should not be in journey when created' do
@@ -68,6 +74,9 @@ describe Oystercard do
     message = "Below card minimum (£#{minimum})"
     expect { subject.touch_in(station) }.to raise_error message
   end
+
+
+
 
   it 'should be created with an accessible list of previous journeys' do
     expect(subject.journeys).to be_empty

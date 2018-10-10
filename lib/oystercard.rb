@@ -2,6 +2,7 @@ class Oystercard
   BALANCE_MAX = 90
   BALANCE_MIN = 1
   CHARGE_MIN = 1
+  PENALTY_FARE = 6
 
   attr_reader :balance, :entry_station, :journeys
 
@@ -21,6 +22,7 @@ class Oystercard
   end
 
   def touch_in(station)
+    deduct_fare(PENALTY_FARE) if in_journey?
     raise "Below card minimum (£#{BALANCE_MIN})" if balance < BALANCE_MIN
     @entry_station = station.name
   end
