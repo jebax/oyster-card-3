@@ -1,11 +1,11 @@
-class JourneyLog
+# frozen_string_literal: true
 
-  attr_reader :journey_class, :current_journey
+class JourneyLog
+  attr_reader :journey_class
 
   def initialize(journey_class)
     @journeys = []
     @journey_class = journey_class
-    @current_journey
   end
 
   def start(station)
@@ -30,5 +30,4 @@ class JourneyLog
   def log_journey
     @journeys << current_journey.data
   end
-
 end
