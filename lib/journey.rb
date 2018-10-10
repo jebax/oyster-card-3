@@ -1,7 +1,9 @@
 class Journey
+  MINIMUM_CHARGE = 1
+  PENALTY_FARE = 6
 
   def initialize
-    @data = {entry_station: nil, exit_station: nil}
+    @data = {entry: nil, exit: nil}
   end
 
   def data
@@ -9,15 +11,20 @@ class Journey
   end
 
   def start(station)
-    @data[:entry_station] = station
+    @data[:entry] = station
   end
 
   def finish(station)
-    @data[:exit_station] = station
+    @data[:exit] = station
   end
 
   def complete?
-    @data[:entry_station] && @data[:exit_station]
+    @data[:entry] && @data[:exit]
+  end
+
+  def fare
+    return MINIMUM_CHARGE if complete?
+    PENALTY_FARE
   end
 
 end

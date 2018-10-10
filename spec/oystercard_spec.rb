@@ -4,7 +4,7 @@ describe Oystercard do
 
   let(:station) { double :station, name: :aldgate }
   let(:station_2) { double :station, name: :euston }
-  let(:journey_1) { { entry: station.name, exit: station_2.name } }
+  let(:journey_1) { { entry: station, exit: station_2 } }
 
   it { expect(subject.balance).to eq 0 }
 
@@ -37,13 +37,9 @@ describe Oystercard do
     end
 
     it 'deducts fare on touching out' do
-      charge = described_class::CHARGE_MIN
-      expect { subject.touch_out(station) }.to change { subject.balance }.by -charge
-    end
-
-    it 'saves its entry station after touch in' do
+      charge = 1
       subject.touch_in(station)
-      expect(subject.entry_station).to eq station.name
+      expect { subject.touch_out(station) }.to change { subject.balance }.by -charge
     end
 
     it 'should not have an entry station after touching out' do
