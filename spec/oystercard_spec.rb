@@ -1,106 +1,76 @@
 require 'oystercard'
-require 'pry'
 
 describe Oystercard do
-  let(:station) { double(:station, name: :london_bridge) }
-  let(:station_2) { double(:station, name: :aldgate) }
-  let(:journey) { double(:journey, data: { entry_station: station.name, exit_station: station_2.name } ) }
 
-  describe '#balance' do
-    it 'should have a balance of 0' do
-      expect(subject.balance).to eq(0)
+  let(:station) { double :station, name: :aldgate }
+  let(:station_2) { double :station, name: :euston }
+  let(:journey_1) { { entry: station.name, exit: station_2.name } }
+
+  it { expect(subject.balance).to eq 0 }
+
+  describe "#top_up" do
+    it 'should top up balance by a specified amount' do
+      expect { subject.top_up 10 }.to change { subject.balance }.by 10
+    end
+
+    it 'should not be able to top up beyond the maximum card limit' do
+      limit = described_class::BALANCE_MAX
+      message = "Max (£#{limit}) exceeded"
+      expect { subject.top_up limit + 1 }.to raise_error message
     end
   end
 
-  describe '#top_up' do
-    it { is_expected.to respond_to(:top_up).with(1).argument }
-    it 'tops up money to the card' do
-      subject.top_up(5)
-      expect { subject.top_up(5) }.to change { subject.balance }.by(5)
-    end
-
-    it 'raises and error if maximum card limit exceeded' do
-      expect { subject.top_up(91) }.to raise_error 'Maximum card limit exceeded'
-    end
-  end
-
-  describe '#deduct' do
+  context "has sufficient card balance" do
     before do
       subject.top_up(10)
     end
 
-    it { is_expected.to respond_to(:deduct).with(1).argument }
-
-    it 'should deduct money from card' do
-      expect { subject.deduct(10) }.to change { subject.balance }.by(-10)
+    it 'touch in means card is in journey' do
+      subject.touch_in(station)
+      expect(subject).to be_in_journey
     end
 
-    it 'shoud deduct the minumum charge when you touch out' do
-      allow(journey).to receive(:start).with(station)
-      allow(journey).to receive(:finish).with(station)
-      allow(journey).to receive(:fare).and_return(1)
-      subject.touch_in(station, journey)
-      expect { subject.touch_out(station, journey) }.to change { subject.balance }.by(-1)
-    end
-  end
-
-  describe '#in_journey' do
-    it 'should show oyster card as not in journey when initialized' do
+    it 'touching out means card is not in journey' do
+      subject.touch_in(station)
+      subject.touch_out(station_2)
       expect(subject).not_to be_in_journey
     end
+
+    it 'deducts fare on touching out' do
+      charge = described_class::CHARGE_MIN
+      expect { subject.touch_out(station) }.to change { subject.balance }.by -charge
+    end
+
+    it 'saves its entry station after touch in' do
+      subject.touch_in(station)
+      expect(subject.entry_station).to eq station.name
+    end
+
+    it 'should not have an entry station after touching out' do
+      subject.touch_in(station)
+      subject.touch_out(station_2)
+      expect(subject.entry_station).to be_nil
+    end
+
+    it 'should store a journey in its list of journeys' do
+      subject.touch_in(station)
+      subject.touch_out(station_2)
+      expect(subject.journeys).to include journey_1
+    end
   end
 
-
-  it 'can touch in' do
-    allow(journey).to receive(:start).with(station)
-    subject.top_up(10)
-    subject.touch_in(station, journey)
-    expect(subject).to be_in_journey
-  end
-
-  it 'can touch out' do
-    allow(journey).to receive(:finish).with(station)
-    allow(journey).to receive(:fare).and_return(1)
-    subject.top_up(20)
-    subject.touch_out(station, journey)
+  it 'should not be in journey when created' do
     expect(subject).not_to be_in_journey
   end
 
-  describe '#touch_in' do
-    it 'raises an error if balance is less than 1' do
-      expect { subject.touch_in(station, journey) }.to raise_error 'Insufficent funds'
-    end
-
-    it'should remember the station after it touches in' do
-      allow(journey).to receive(:start).with(station)
-      subject.top_up(5)
-      subject.touch_in(station, journey)
-      expect(subject.entry_station).to eq station.name
-    end
+  it 'cannot touch in with less than minimum balance' do
+    minimum = described_class::BALANCE_MIN
+    message = "Below card minimum (£#{minimum})"
+    expect { subject.touch_in(station) }.to raise_error message
   end
 
-  describe '#touch_out' do
-    it 'should forget the entry station when it touches out' do
-      allow(journey).to receive(:start).with(station)
-      allow(journey).to receive(:finish).with(station)
-      allow(journey).to receive(:fare).and_return(1)
-      subject.top_up(5)
-      subject.touch_in(station, journey)
-      subject.touch_out(station, journey)
-      expect(subject.entry_station).to eq nil
-    end
-  end
-
-  describe "#journeys" do
-    it 'should save journey data' do
-      allow(journey).to receive(:start).with(station)
-      allow(journey).to receive(:finish).with(station_2)
-      allow(journey).to receive(:fare).and_return(1)
-      subject.top_up(5)
-      subject.touch_in(station, journey)
-      subject.touch_out(station_2, journey)
-      expect(subject.journeys).to include journey.data
-    end
+  it 'should be created with an accessible list of previous journeys' do
+    expect(subject.journeys).to be_empty
   end
 
 end
