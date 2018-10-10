@@ -13,8 +13,8 @@ class JourneyLog
   end
 
   def finish(station)
-    current_journey.finish(station)
     log_journey
+    current_journey.finish(station)
   end
 
   def journeys
