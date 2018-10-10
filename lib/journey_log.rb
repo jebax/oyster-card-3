@@ -13,8 +13,8 @@ class JourneyLog
   end
 
   def finish(station)
-    log_journey
     current_journey.finish(station)
+    log_journey
   end
 
   def journeys
@@ -29,7 +29,6 @@ class JourneyLog
 
   def log_journey
     @journeys << current_journey.data
-    @current_journey = nil
   end
 
 end
