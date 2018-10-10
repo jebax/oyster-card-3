@@ -39,7 +39,7 @@ class Oystercard
     @balance -= fare
   end
 
-  def finish_journey
+  def finish_journey # DONE
     @journeys << current_journey.data
     @current_journey = nil
   end

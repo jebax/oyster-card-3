@@ -42,17 +42,6 @@ describe Oystercard do
       expect { subject.touch_out(station) }.to change { subject.balance }.by -charge
     end
 
-    it 'should not have an entry station after touching out' do
-      subject.touch_in(station)
-      subject.touch_out(station_2)
-      expect(subject.entry_station).to be_nil
-    end
-
-    it 'should store a journey in its list of journeys' do
-      subject.touch_in(station)
-      subject.touch_out(station_2)
-      expect(subject.journeys).to include journey_1
-    end
 
     it 'deducts penalty fare if touch in without touching out' do
       2.times { subject.touch_in(station) }
@@ -71,11 +60,5 @@ describe Oystercard do
     expect { subject.touch_in(station) }.to raise_error message
   end
 
-
-
-
-  it 'should be created with an accessible list of previous journeys' do
-    expect(subject.journeys).to be_empty
-  end
 
 end
