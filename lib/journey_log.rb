@@ -21,11 +21,11 @@ class JourneyLog
     @journeys.dup
   end
 
-  private
-
   def current_journey
     @current_journey ||= @journey_class.new
   end
+
+  private
 
   def log_journey
     @journeys << current_journey.data

@@ -1,10 +1,11 @@
 require 'oystercard'
 
 describe Oystercard do
-
   let(:station) { double :station, name: :aldgate }
   let(:station_2) { double :station, name: :euston }
-  let(:journey_1) { { entry: station, exit: station_2 } }
+  let(:journey) { double(:journey, start: nil, finish: nil, fare: 1, data: {entry: station, exit: station_2}) }
+  let(:journey_class) { double(:journey_class, new: journey) }
+  let(:subject) { Oystercard.new(journey_class) }
 
   it { expect(subject.balance).to eq 0 }
 
@@ -44,6 +45,7 @@ describe Oystercard do
 
 
     it 'deducts penalty fare if touch in without touching out' do
+      allow(journey).to receive(:fare).and_return(6)
       2.times { subject.touch_in(station) }
       expect(subject.balance).to eq 4
     end
